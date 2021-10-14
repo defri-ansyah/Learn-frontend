@@ -98,13 +98,23 @@ export default {
       items: [
         {
           icon: 'mdi-apps',
-          title: 'Welcome',
+          title: 'Home',
           to: '/'
         },
         {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire'
+          icon: 'mdi-account',
+          title: 'Add Students',
+          to: '/add-student'
+        },
+        {
+          icon: 'mdi-domain',
+          title: 'Add Classroom',
+          to: '/add-classroom'
+        },
+        {
+          icon: 'mdi-call-split',
+          title: 'Assign',
+          to: '/assign'
         }
       ],
       miniVariant: false,
