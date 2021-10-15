@@ -5,35 +5,57 @@
   </form>
 </template>
 
-<script>
+<script lang="ts">
 import gql from "graphql-tag";
+import { Component, Prop, Vue } from "vue-property-decorator";
+import "vue-apollo";
 
-export default {
-  name: 'addClassroom',
-  data() {
-    return {
-      name: '',
-    }
-  },
-  methods: {
-    createClassroom(event) {
-      this.$apollo.mutate({
+@Component
+export default class addClassroom extends Vue {
+  @Prop() 
+  name:string = '';
+
+  createClassroom(event: { target: { reset: () => void }; }) {
+    this.$apollo
+      .mutate({
         mutation: gql`
-        mutation(
-          $name: String
-        ){
-          createClassroom (
-            name: $name
-          )
-        }
+          mutation ($name: String) {
+            createClassroom(name: $name)
+          }
         `,
         variables: {
           name: this.name,
-        }
-      }).then (data => {
-        event.target.reset()
+        },
       })
-    }
-  },
-};
+      .then((data:any) => {
+        event.target.reset();
+      });
+  }
+}
+// name: 'addClassroom',
+// data() {
+//   return {
+//     name: '',
+//   }
+// },
+// methods: {
+//   createClassroom(event) {
+//     this.$apollo.mutate({
+//       mutation: gql`
+//       mutation(
+//         $name: String
+//       ){
+//         createClassroom (
+//           name: $name
+//         )
+//       }
+//       `,
+//       variables: {
+//         name: this.name,
+//       }
+//     }).then (data => {
+//       event.target.reset()
+//     })
+//   }
+// }
 </script>

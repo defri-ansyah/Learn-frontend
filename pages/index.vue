@@ -46,78 +46,37 @@
   </div>
 </template>
 
-<script>
+<script lang="ts">
 import gql from "graphql-tag";
+import { Component, Prop, Vue, Provide, Watch } from "vue-property-decorator";
+import "vue-apollo";
 
-export default {
-  data() {
-    return {
-      student: [],
-      search: "",
-      totalData: 10,
-      loading: false,
-      options: {},
-      selectedClass: 0,
-      headers: [
-        {
-          text: "Name",
-          align: "start",
-          value: "name",
-        },
-        { text: "Age", value: "age" },
-        { text: "Gender", value: "gender" },
-        { text: "Classroom", value: "classroom.name", sortable: false },
-      ],
-    };
-  },
-  // watch: {
-  //   options: {
-  //     handler() {
-  //       this.getStudent()
-  //       console.log(this.options)
-  //     },
-  //     deep: true,
-  //   },
-  // },
-  // created() {
-  //   this.getStudent()
-  // },
-  // methods: {
-  //   getStudent(event) {
-  //     this.$apollo.query({
-  //       query: gql`
-  //         query getStudent($where: Filter, $sort: sortBy) {
-  //           getStudent(where: $where, sort: $sort) {
-  //             id
-  //             name
-  //             age
-  //             gender
-  //             classroom {
-  //               name
-  //             }
-  //           }
-  //         }
-  //       `,
-  //       variables() {
-  //         const { sortBy, sortDesc, page, itemsPerPage } = this.options;
-  //         let sort = null;
-  //         let sortValues = sortDesc[0] ? "DESC":"ASC"
-  //         if (sortBy && sortDesc) {
-  //           sort = { [sortBy[0]]: sortValues };
-  //         }
-  //         return {
-  //           where: this.where,
-  //           sort: sort,
-  //         };
-  //       },
-  //     }).then (data => {
-  //       // console.log(data);
-  //       this.student = data.data.getStudent
-  //     })
-  //   },
-  // },
-  apollo: {
-    getStudent: {
+@Component
+export default class Home extends Vue {
+  @Prop()
+  student= []
+  search:string = ""
+  totalData:number = 20
+  loading= false
+  options:any = {}
+  selectedClass= ''
+  getStudent = [];
+  getAllClassroom = [];
+  headers= [
+    {
+      text: "Name",
+      align: "start",
+      value: "name",
+    },
+    { text: "Age", value: "age" },
+    { text: "Gender", value: "gender" },
+    { text: "Classroom", value: "classroom.name", sortable: false },
+  ]
+
+  // @Watch('options', { deep: true })
+  handleGet() {
+    const self = this
+    this.$apollo.addSmartQuery("getStudent", {
       query: gql`
         query getStudent(
           $where: Filter
@@ -127,52 +86,184 @@ export default {
           $search: String
         ) {
           getStudent(
-            where: $where
-            sort: $sort
-            offset: $offset
-            limit: $limit
-            search: $search
+             where: $where
+             sort: $sort
+             offset: $offset
+             limit: $limit
+             search: $search
           ) {
             id
             name
             age
             gender
             classroom {
-              name
+               name
             }
           }
-        }
+         }
       `,
       variables() {
-        let { sortBy, sortDesc, page, itemsPerPage } = this.options;
-        const options = {
-          limit: itemsPerPage > 0 ? itemsPerPage : this.totalData,
-          offset: page * itemsPerPage - itemsPerPage,
+        let { sortBy, sortDesc, page, itemsPerPage } = self.options
+        const options:any = {
+          limit: itemsPerPage > 0 ? itemsPerPage : self.totalData,
+          offset: (page * itemsPerPage - itemsPerPage) ??  1,
         };
+        
         if ((sortBy?.length ?? 0) && (sortDesc?.length ?? 0)) {
           let sortValues = sortDesc[0] ? "ASC" : "DESC";
           const sort = { [sortBy]: sortValues };
           options.sort = sort;
         }
-        if (this.search !== "") {
-          options.search = this.search;
+        if (self.search !== "") {
+          options.search = self.search;
         }
-        if (this.selectedClass != 0 && this.selectedClass != null) {
-          options.where = { classroom_id: parseInt(this.selectedClass) };
+        if (self.selectedClass != '' && self.selectedClass != null) {
+          options.where = { classroom_id: parseInt(self.selectedClass)};
         }
         return options;
       },
-    },
-    getAllClassroom: gql`
-      query classroom {
-        getAllClassroom {
-          id
-          name
-        }
-      }
-    `,
-  },
-};
+    });
+      this.$apollo.addSmartQuery("getAllClassroom", {
+        query: gql`
+          query classroom {
+            getAllClassroom {
+              id
+              name
+            }
+          }
+        `,
+      });
+  }
+
+  created() {
+    this.handleGet();
+  }
+}
+
+// export default {
+//   data() {
+//     return {
+//       student: [],
+//       search: "",
+//       totalData: 20,
+//       loading: false,
+//       options: {},
+//       selectedClass: 0,
+//       headers: [
+//         {
+//           text: "Name",
+//           align: "start",
+//           value: "name",
+//         },
+//         { text: "Age", value: "age" },
+//         { text: "Gender", value: "gender" },
+//         { text: "Classroom", value: "classroom.name", sortable: false },
+//       ],
+//     };
+//   },
+//   // watch: {
+//   //   options: {
+//   //     handler() {
+//   //       this.getStudent()
+//   //       console.log(this.options)
+//   //     },
+//   //     deep: true,
+//   //   },
+//   // },
+//   // created() {
+//   //   this.getStudent()
+//   // },
+//   // methods: {
+//   //   getStudent(event) {
+//   //     this.$apollo.query({
+//   //       query: gql`
+//   //         query getStudent($where: Filter, $sort: sortBy) {
+//   //           getStudent(where: $where, sort: $sort) {
+//   //             id
+//   //             name
+//   //             age
+//   //             gender
+//   //             classroom {
+//   //               name
+//   //             }
+//   //           }
+//   //         }
+//   //       `,
+//   //       variables() {
+//   //         const { sortBy, sortDesc, page, itemsPerPage } = this.options;
+//   //         let sort = null;
+//   //         let sortValues = sortDesc[0] ? "DESC":"ASC"
+//   //         if (sortBy && sortDesc) {
+//   //           sort = { [sortBy[0]]: sortValues };
+//   //         }
+//   //         return {
+//   //           where: this.where,
+//   //           sort: sort,
+//   //         };
+//   //       },
+//   //     }).then (data => {
+//   //       // console.log(data);
+//   //       this.student = data.data.getStudent
+//   //     })
+//   //   },
+//   // },
+//   apollo: {
+//     getStudent: {
+//       query: gql`
+//         query getStudent(
+//           $where: Filter
+//           $sort: sortBy
+//           $offset: Int
+//           $limit: Int
+//           $search: String
+//         ) {
+//           getStudent(
+//             where: $where
+//             sort: $sort
+//             offset: $offset
+//             limit: $limit
+//             search: $search
+//           ) {
+//             id
+//             name
+//             age
+//             gender
+//             classroom {
+//               name
+//             }
+//           }
+//         }
+//       `,
+//       variables() {
+//         let { sortBy, sortDesc, page, itemsPerPage } = this.options;
+//         const options = {
+//           limit: itemsPerPage > 0 ? itemsPerPage : this.totalData,
+//           offset: page * itemsPerPage - itemsPerPage,
+//         };
+//         if ((sortBy?.length ?? 0) && (sortDesc?.length ?? 0)) {
+//           let sortValues = sortDesc[0] ? "ASC" : "DESC";
+//           const sort = { [sortBy]: sortValues };
+//           options.sort = sort;
+//         }
+//         if (this.search !== "") {
+//           options.search = this.search;
+//         }
+//         if (this.selectedClass != 0 && this.selectedClass != null) {
+//           options.where = { classroom_id: parseInt(this.selectedClass) };
+//         }
+//         return options;
+//       },
+//     },
+//     getAllClassroom: gql`
+//       query classroom {
+//         getAllClassroom {
+//           id
+//           name
+//         }
+//       }
+//     `,
+//   },
+// };
 </script>
 
 <style lang="scss" scoped>

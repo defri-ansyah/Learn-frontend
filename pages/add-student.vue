@@ -7,43 +7,72 @@
   </form>
 </template>
 
-<script>
+<script lang="ts">
 import gql from "graphql-tag";
+import { Component, Prop, Vue } from "vue-property-decorator";
+import "vue-apollo";
 
-export default {
-  name: 'addStudent',
-  data() {
-    return {
-      name: '',
-      age: 0,
-      gender: ''
-    }
-  },
-  methods: {
-    createStudent(event) {
-      this.$apollo.mutate({
+@Component
+export default class addStudent extends Vue {
+  @Prop()
+  name:string = ''
+  gender!: string;
+  age!: string;
+
+  createStudent(event: { target: { reset: () => void } }) {
+    this.$apollo
+      .mutate({
         mutation: gql`
-        mutation(
-          $name: String
-          $age: Int
-          $gender: String
-        ){
-          createStudent (
-            name: $name
-            age: $age
-            gender: $gender
-          )
-        }
+          mutation ($name: String, $age: Int, $gender: String) {
+            createStudent(name: $name, age: $age, gender: $gender)
+          }
         `,
         variables: {
           name: this.name,
           age: parseInt(this.age),
-          gender: this.gender
-        }
-      }).then (data => {
-        event.target.reset()
+          gender: this.gender,
+        },
       })
-    }
-  },
-};
+      .then((data: any) => {
+        event.target.reset();
+      });
+  }
+}
+
+// export default {
+//   name: 'addStudent',
+//   data() {
+//     return {
+//       name: '',
+//       age: 0,
+//       gender: ''
+//     }
+//   },
+//   methods: {
+//     createStudent(event) {
+//       this.$apollo.mutate({
+//         mutation: gql`
+//         mutation(
+//           $name: String
+//           $age: Int
+//           $gender: String
+//         ){
+//           createStudent (
+//             name: $name
+//             age: $age
+//             gender: $gender
+//           )
+//         }
+//         `,
+//         variables: {
+//           name: this.name,
+//           age: parseInt(this.age),
+//           gender: this.gender
+//         }
+//       }).then (data => {
+//         event.target.reset()
+//       })
+//     }
+//   },
+// };
 </script>
